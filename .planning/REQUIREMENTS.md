@@ -94,34 +94,34 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| ENTRY-01 | — | Pending |
-| ENTRY-02 | — | Pending |
-| ENTRY-03 | — | Pending |
-| ENTRY-04 | — | Pending |
-| CORE-01 | — | Pending |
-| CORE-02 | — | Pending |
-| CORE-03 | — | Pending |
-| CORE-04 | — | Pending |
-| GBOX-01 | — | Pending |
-| GBOX-02 | — | Pending |
-| SAST-01 | — | Pending |
-| SAST-02 | — | Pending |
-| SAST-03 | — | Pending |
-| DAST-01 | — | Pending |
-| DAST-02 | — | Pending |
-| DAST-03 | — | Pending |
-| DAST-04 | — | Pending |
-| RPT-01 | — | Pending |
-| RPT-02 | — | Pending |
-| RPT-03 | — | Pending |
-| ADV-01 | — | Pending |
-| ADV-02 | — | Pending |
+| ENTRY-01 | Phase 3 | Pending |
+| ENTRY-02 | Phase 3 | Pending |
+| ENTRY-03 | Phase 3 | Pending |
+| ENTRY-04 | Phase 5 | Pending |
+| CORE-01 | Phase 1 | Pending |
+| CORE-02 | Phase 2 | Pending |
+| CORE-03 | Phase 1 | Pending |
+| CORE-04 | Phase 2 | Pending |
+| GBOX-01 | Phase 4 | Pending |
+| GBOX-02 | Phase 4 | Pending |
+| SAST-01 | Phase 3 | Pending |
+| SAST-02 | Phase 3 | Pending |
+| SAST-03 | Phase 3 | Pending |
+| DAST-01 | Phase 4 | Pending |
+| DAST-02 | Phase 4 | Pending |
+| DAST-03 | Phase 4 | Pending |
+| DAST-04 | Phase 4 | Pending |
+| RPT-01 | Phase 5 | Pending |
+| RPT-02 | Phase 5 | Pending |
+| RPT-03 | Phase 5 | Pending |
+| ADV-01 | Phase 6 | Pending |
+| ADV-02 | Phase 6 | Pending |
 
 **Coverage:**
 - v1 requirements: 22 total
-- Mapped to phases: 0
-- Unmapped: 22 ⚠️
+- Mapped to phases: 22
+- Unmapped: 0 ✓
 
 ---
 *Requirements defined: 2026-06-18*
-*Last updated: 2026-06-18 after initial definition*
+*Last updated: 2026-06-18 after roadmap creation*
