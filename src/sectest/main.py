@@ -216,14 +216,21 @@ async def async_main() -> None:
             if emitter is not None:
                 emitter.emit("TOOL_EXEC", "running", f"Testing LLM connectivity with model={model}...")
 
-            from agents import Runner, Agent as SDKAgent
+            from agents import Runner, Agent as SDKAgent, RunConfig
+            from sectest.llm.provider import llm_provider
 
             test_agent = SDKAgent(
                 name="connectivity-test",
                 instructions="You are a security platform connectivity test. Reply with exactly: OK",
-                model=model,
             )
-            run_result = await Runner.run(test_agent, "Hello")
+            run_result = await Runner.run(
+                test_agent,
+                "Hello",
+                run_config=RunConfig(
+                    model_provider=llm_provider,
+                    model=model,  # resolved via OUR provider, not SDK multi-provider
+                ),
+            )
             output = run_result.final_output
 
             if emitter is not None:
