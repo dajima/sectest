@@ -36,7 +36,7 @@ RUN apt-get update \
         procps \
         python3 \
         coreutils \
-    && pip3 install --no-cache-dir \
+    && pip3 install --no-cache-dir --break-system-packages \
         semgrep \
         bandit \
     && rm -rf /var/lib/apt/lists/* \
