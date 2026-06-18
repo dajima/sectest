@@ -211,22 +211,28 @@ async def async_main() -> None:
     session: SandboxSession | None = None
 
     try:
-        # --llm-only: skip Docker, test LLM connectivity only
+        # --llm-only: skip Docker entirely, test LLM connectivity only
         if args.llm_only:
             if emitter is not None:
                 emitter.emit("TOOL_EXEC", "running", f"Testing LLM connectivity with model={model}...")
 
-            # Quick LLM connectivity check — no sandbox needed
-            test_agent = ReconAgent(manager, model=model)
-            test_session = await manager.create_session()
-            try:
-                result = await test_agent.run_scan("localhost", session=test_session)
-            finally:
-                manager.schedule_cleanup(test_session)
+            from agents import Runner, Agent as SDKAgent
+
+            test_agent = SDKAgent(
+                name="connectivity-test",
+                instructions="You are a security platform connectivity test. Reply with exactly: OK",
+                model=model,
+            )
+            run_result = await Runner.run(test_agent, "Hello")
+            output = run_result.final_output
 
             if emitter is not None:
                 emitter.emit("TOOL_EXEC", "done", "LLM test completed.")
-            _output_results(emitter, result)
+                emitter.emit("DONE", "done", f"LLM response: {output}", model=model)
+
+            if emitter is None:
+                print(f"Model: {model}")
+                print(f"Response: {output}")
             return
 
         # Phase: PULL_IMAGE
