@@ -1,0 +1,44 @@
+# ==============================================
+# LiteLLM Proxy Configuration — Sectest Platform
+# ==============================================
+# Phase 1: In-memory mode only (no PostgreSQL/Redis backend).
+# Router type: basic (no DB required).
+#
+# API keys are sourced from environment variables via
+# os.environ/ syntax — NEVER hardcoded.
+
+model_list:
+  # Primary: OpenAI GPT-4o
+  - model_name: gpt-4o
+    litellm_params:
+      model: openai/gpt-4o
+      api_key: os.environ/OPENAI_API_KEY
+
+  # Secondary: Anthropic Claude Sonnet 4
+  - model_name: claude-sonnet-4-20250514
+    litellm_params:
+      model: anthropic/claude-sonnet-4-20250514
+      api_key: os.environ/ANTHROPIC_API_KEY
+
+  # Fast/cheap model for non-critical tasks
+  - model_name: gpt-4o-mini
+    litellm_params:
+      model: openai/gpt-4o-mini
+      api_key: os.environ/OPENAI_API_KEY
+
+# Fallback chain: provider-level redundancy
+litellm_settings:
+  num_retries: 3
+  request_timeout: 120
+  allowed_fails: 5
+  fallbacks:
+    - gpt-4o: ["claude-sonnet-4-20250514"]
+    - claude-sonnet-4-20250514: ["gpt-4o-mini"]
+
+# Phase 1: In-memory routing only (no DB)
+router_settings:
+  type: basic
+
+# General settings
+general_settings:
+  master_key: os.environ/LITELLM_MASTER_KEY

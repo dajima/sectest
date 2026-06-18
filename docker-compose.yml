@@ -1,0 +1,28 @@
+# ==============================================
+# Sectest Platform — Docker Compose
+# ==============================================
+# Phase 1: LiteLLM Proxy only (standalone, no DB stubs).
+# PostgreSQL and Redis are added in Phase 2 when multi-agent
+# state and session persistence require them.
+
+services:
+  litellm:
+    image: ghcr.io/berriai/litellm:main-latest
+    ports:
+      - "127.0.0.1:4000:4000"   # localhost-only — security requirement T-08
+    volumes:
+      - ./config/litellm_config.yaml:/app/config.yaml:ro
+    command:
+      - "--config"
+      - "/app/config.yaml"
+      - "--port"
+      - "4000"
+    environment:
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
+      - LITELLM_MASTER_KEY=${LITELLM_MASTER_KEY:-sk-sectest-lite}
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:4000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
