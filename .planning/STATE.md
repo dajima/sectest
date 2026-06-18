@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: planning
-stopped_at: Phase 1 executed — 6/8 tasks complete via 6 commits, 113 tests pass
-last_updated: "2026-06-18T11:00:00.000Z"
-last_activity: 2026-06-18 — Phase 1 executed: T1 (scaffold), T2 (Kali Dockerfile), T3 (SandboxManager), T4 (LiteLLM config), T5 (ModelProvider), T6 (ReconAgent), T7 (entry point + streaming), T8 (E2E smoke tests)
+status: executed
+stopped_at: Phase 1 complete — all 8 tasks done, Kali image built, dual-mode LLM working
+last_updated: "2026-06-18T11:30:00.000Z"
+last_activity: 2026-06-18 — Phase 1 complete: dual-mode LLM (direct + proxy), --llm-only flag, Kali image built (sectest/kali-sandbox:latest), all 120 tests pass
 progress:
   total_phases: 7
   completed_phases: 1
   total_plans: 2
   completed_plans: 2
-  percent: 7
+  percent: 14
 ---
 
 # Project State
@@ -25,20 +25,21 @@ See: .planning/PROJECT.md (updated 2026-06-18)
 
 ## Current Position
 
-Phase: 1 of 7 (Foundation — Kali Sandbox + LLM Gateway)
-Plan: 1 of 2 complete (PLAN.md + VERIFICATION.md exist; streaming SC-3 added post-verification)
-Status: Ready to execute (plan verified PASS; minor update needs re-verify)
-Last activity: 2026-06-18 — Roadmap restructured 6→7 phases, ASSET-01 added, Phase 1 PLAN.md updated with streaming progress, Phase 3 placeholder created
+Phase: 2 of 7 (Engine — Multi-Agent Pipeline + Capability Registry)
+Plan: 0 of 2 complete
+Status: Ready to plan (Phase 2 is next unplanned phase)
+Last activity: 2026-06-18 — Phase 1 complete, Kali image built, all tests pass
 
-Progress: [█░░░░░░░░░] 7% (1/7 phases planned)
+Progress: [██░░░░░░░░] 14% (1/7 phases executed)
 
 ## Performance Metrics
 
 **Velocity:**
 
-- Total plans completed: 0
-- Average duration: —
-- Total execution time: 0 hours
+- Total plans completed: 2
+- Plans executed: 8 (all T1-T8)
+- Total execution time: ~3 hours (across 8 subagents)
+- Tests: 120 passing
 
 **By Phase:**
 
@@ -65,11 +66,11 @@ Progress: [█░░░░░░░░░] 7% (1/7 phases planned)
 Decisions are logged in PROJECT.md Key Decisions table.
 Recent decisions affecting current work:
 
-- Roadmap: SandboxManager abstraction from Phase 1 (insulate agent code from openai-agents SDK beta API changes)
-- Roadmap: SAST PoC auto-verification in Phase 4, DAST PoC deferred to v2
-- Roadmap: Phases 4 (CLI+SAST) and 5 (DAST+Grey-Box) can parallel after Phase 3
-- Roadmap: Phase 3 (Asset Management) inserted — 6→7 phases. Assets are the persistent data source for all scans. Credentials encrypted at rest.
-- Roadmap: Phase 1 now includes streaming scan progress (SC-3) — structured JSON line output per phase transition (PULL_IMAGE → CREATE_SANDBOX → TOOL_EXEC → PARSE_RESULTS → DONE)
+- Roadmap: Phase 1 (Foundation) complete — Kali sandbox + LiteLLM gateway + streaming + ReconAgent
+- LLM: Dual-mode architecture — direct mode (LLM_API_BASE/LLM_API_KEY) and proxy mode (LiteLLM)
+- SandboxManager: Abstraction layer proven (L-01/L-02 compliant, zero agents.sandbox imports in agent code)
+- Phase 2 required research on multi-agent handoff patterns with context compression (HIGH research flag from SUMMARY.md)
+- Phase 3 (Asset Management) placeholder exists — needs full discuss + plan after Phase 2 completes
 
 ### Pending Todos
 
