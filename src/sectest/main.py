@@ -1,0 +1,201 @@
+"""Sectest platform entry point (T7).
+
+Orchestrates the Phase 1 end-to-end scan pipeline:
+
+1. Load configuration from environment variables
+2. Initialize ``SandboxManager`` with ``sectest/kali-sandbox:latest``
+3. Pre-pull Kali image with progress reporting (L-06)
+4. Create ephemeral sandbox session (D-01, D-02)
+5. Run ``ReconAgent`` scan
+6. Stream real-time progress as structured JSON lines to stdout
+7. Output final results
+8. Schedule 15-minute delayed cleanup (D-03, D-04)
+9. Ensure cleanup runs on error via try/finally (L-08)
+
+Usage::
+
+    uv run python -m sectest.main --target example.com
+    uv run python -m sectest.main --target localhost --progress-format text
+"""
+
+from __future__ import annotations
+
+import argparse
+import asyncio
+import json
+import sys
+from typing import TYPE_CHECKING
+
+from sectest.agents.recon import ReconAgent
+from sectest.llm.config import LLMConfig
+from sectest.sandbox.manager import SandboxConfig, SandboxManager
+from sectest.streaming import ProgressEmitter, ScanPhase
+
+if TYPE_CHECKING:
+    from sectest.sandbox.manager import SandboxSession
+
+
+# ---------------------------------------------------------------------------
+# CLI argument parsing
+# ---------------------------------------------------------------------------
+
+
+def _build_parser() -> argparse.ArgumentParser:
+    """Build the CLI argument parser."""
+    parser = argparse.ArgumentParser(
+        prog="sectest",
+        description="AI-driven security reconnaissance platform.",
+    )
+    parser.add_argument(
+        "--target",
+        default="localhost",
+        help="IP address, hostname, or URL to scan (default: localhost).",
+    )
+    parser.add_argument(
+        "--progress-format",
+        choices=["json", "text"],
+        default="json",
+        help="Progress output format.  'json' emits one JSON object per "
+        "line; 'text' prints human-readable messages (default: json).",
+    )
+    return parser
+
+
+# ---------------------------------------------------------------------------
+# Phase helpers
+# ---------------------------------------------------------------------------
+
+
+async def _run_phase_pull_image(
+    emitter: ProgressEmitter | None,
+    manager: SandboxManager,
+) -> None:
+    """Pre-pull Kali sandbox image."""
+    if emitter is not None:
+        with emitter.phase("PULL_IMAGE", "Pre-pulling Kali sandbox image..."):
+            await manager.pre_pull_image()
+    else:
+        print("Pre-pulling Kali sandbox image...")
+        await manager.pre_pull_image()
+
+
+async def _run_phase_create_sandbox(
+    emitter: ProgressEmitter | None,
+    manager: SandboxManager,
+) -> SandboxSession:
+    """Create ephemeral sandbox container."""
+    if emitter is not None:
+        with emitter.phase("CREATE_SANDBOX", "Creating sandbox container..."):
+            session = await manager.create_session()
+    else:
+        print("Creating sandbox container...")
+        session = await manager.create_session()
+    return session
+
+
+async def _run_phase_tool_exec(
+    emitter: ProgressEmitter | None,
+    agent: ReconAgent,
+    target: str,
+    session: SandboxSession,
+) -> dict:
+    """Run the reconnaissance scan inside the sandbox."""
+    if emitter is not None:
+        with emitter.phase("TOOL_EXEC", f"Running scan against {target}..."):
+            result = await agent.run_scan(target, session=session)
+    else:
+        print(f"Running scan against {target}...")
+        result = await agent.run_scan(target, session=session)
+    return result
+
+
+def _output_results(
+    emitter: ProgressEmitter | None,
+    result: dict,
+) -> None:
+    """Output scan results to stdout as structured JSON.
+
+    When an emitter is active the result is written as a single JSON line
+    (no indentation) so every stdout line remains independently parseable.
+    In text mode the result is pretty-printed for human readability.
+    """
+    if emitter is not None:
+        with emitter.phase("PARSE_RESULTS", "Parsing scan results..."):
+            # Single-line JSON -- preserves the "one JSON per line" contract
+            sys.stdout.write(json.dumps(result, default=str) + "\n")
+            sys.stdout.flush()
+    else:
+        json.dump(result, sys.stdout, indent=2, default=str)
+        print()
+
+    if emitter is not None:
+        emitter.emit(
+            "DONE",
+            "done",
+            "Scan completed successfully.",
+            summary=result.get("summary", ""),
+        )
+
+
+# ---------------------------------------------------------------------------
+# Main entry point
+# ---------------------------------------------------------------------------
+
+
+async def async_main() -> None:
+    """Async entry point for the sectest platform.
+
+    Orchestrates the full startup--scan--cleanup lifecycle with
+    streaming progress output.
+    """
+    parser = _build_parser()
+    args = parser.parse_args()
+
+    # 1. Resolve progress emitter
+    emitter = ProgressEmitter() if args.progress_format == "json" else None
+
+    # 2. Load configuration
+    try:
+        LLMConfig()  # validates LITELLM_API_KEY is set
+    except ValueError as exc:
+        if emitter is not None:
+            emitter.emit("PULL_IMAGE", "error", str(exc))
+        else:
+            print(f"Configuration error: {exc}", file=sys.stderr)
+        sys.exit(1)
+
+    # 3. Initialize SandboxManager
+    sandbox_config = SandboxConfig()
+    manager = SandboxManager(sandbox_config)
+
+    # 4. Initialize ReconAgent (uses default model from LLMConfig/Provider)
+    agent = ReconAgent(manager, model=None)
+
+    session: SandboxSession | None = None
+
+    try:
+        # Phase: PULL_IMAGE
+        await _run_phase_pull_image(emitter, manager)
+
+        # Phase: CREATE_SANDBOX
+        session = await _run_phase_create_sandbox(emitter, manager)
+
+        # Phase: TOOL_EXEC
+        result = await _run_phase_tool_exec(emitter, agent, args.target, session)
+
+        # Output results
+        _output_results(emitter, result)
+
+    finally:
+        # Ensure cleanup is scheduled regardless of success or error (L-08)
+        if session is not None:
+            manager.schedule_cleanup(session)
+
+
+def main() -> None:
+    """Synchronous wrapper around :func:`async_main`."""
+    asyncio.run(async_main())
+
+
+if __name__ == "__main__":
+    main()
