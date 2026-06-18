@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: planning
-stopped_at: Phase 1 context gathered
-last_updated: "2026-06-18T07:33:33.698Z"
-last_activity: 2026-06-18 — Roadmap created, 22 v1 requirements mapped across 6 phases
+stopped_at: Phase 1 executed — 6/8 tasks complete via 6 commits, 113 tests pass
+last_updated: "2026-06-18T11:00:00.000Z"
+last_activity: 2026-06-18 — Phase 1 executed: T1 (scaffold), T2 (Kali Dockerfile), T3 (SandboxManager), T4 (LiteLLM config), T5 (ModelProvider), T6 (ReconAgent), T7 (entry point + streaming), T8 (E2E smoke tests)
 progress:
-  total_phases: 6
-  completed_phases: 0
-  total_plans: 0
-  completed_plans: 0
-  percent: 0
+  total_phases: 7
+  completed_phases: 1
+  total_plans: 2
+  completed_plans: 2
+  percent: 7
 ---
 
 # Project State
@@ -25,12 +25,12 @@ See: .planning/PROJECT.md (updated 2026-06-18)
 
 ## Current Position
 
-Phase: 1 of 6 (Foundation — Kali Sandbox + LLM Gateway)
-Plan: 0 of 2 in current phase
-Status: Ready to plan
-Last activity: 2026-06-18 — Roadmap created, 22 v1 requirements mapped across 6 phases
+Phase: 1 of 7 (Foundation — Kali Sandbox + LLM Gateway)
+Plan: 1 of 2 complete (PLAN.md + VERIFICATION.md exist; streaming SC-3 added post-verification)
+Status: Ready to execute (plan verified PASS; minor update needs re-verify)
+Last activity: 2026-06-18 — Roadmap restructured 6→7 phases, ASSET-01 added, Phase 1 PLAN.md updated with streaming progress, Phase 3 placeholder created
 
-Progress: [░░░░░░░░░░] 0%
+Progress: [█░░░░░░░░░] 7% (1/7 phases planned)
 
 ## Performance Metrics
 
@@ -46,10 +46,11 @@ Progress: [░░░░░░░░░░] 0%
 |-------|-------|-------|----------|
 | 1. Foundation | 0 | 2 | — |
 | 2. Engine | 0 | 2 | — |
-| 3. CLI + SAST | 0 | 6 | — |
-| 4. DAST + Grey-Box | 0 | 6 | — |
-| 5. Web UI + Reports | 0 | 4 | — |
-| 6. Advanced | 0 | 2 | — |
+| 3. Asset Mgmt | 0 | 3 | — |
+| 4. CLI + SAST | 0 | 5 | — |
+| 5. DAST + Grey-Box | 0 | 6 | — |
+| 6. Web UI + Reports | 0 | 4 | — |
+| 7. Advanced | 0 | 2 | — |
 
 **Recent Trend:**
 
@@ -65,8 +66,10 @@ Decisions are logged in PROJECT.md Key Decisions table.
 Recent decisions affecting current work:
 
 - Roadmap: SandboxManager abstraction from Phase 1 (insulate agent code from openai-agents SDK beta API changes)
-- Roadmap: SAST PoC auto-verification in Phase 3, DAST PoC deferred to v2
-- Roadmap: Phases 3 (CLI+SAST) and 4 (DAST+Grey-Box) can parallel after Phase 2
+- Roadmap: SAST PoC auto-verification in Phase 4, DAST PoC deferred to v2
+- Roadmap: Phases 4 (CLI+SAST) and 5 (DAST+Grey-Box) can parallel after Phase 3
+- Roadmap: Phase 3 (Asset Management) inserted — 6→7 phases. Assets are the persistent data source for all scans. Credentials encrypted at rest.
+- Roadmap: Phase 1 now includes streaming scan progress (SC-3) — structured JSON line output per phase transition (PULL_IMAGE → CREATE_SANDBOX → TOOL_EXEC → PARSE_RESULTS → DONE)
 
 ### Pending Todos
 

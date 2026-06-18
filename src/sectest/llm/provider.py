@@ -1,16 +1,23 @@
-"""LiteLLM ModelProvider for openai-agents SDK.
+"""LiteLLM / Direct ModelProvider for openai-agents SDK.
 
-Connects the openai-agents SDK to LiteLLM Proxy for multi-provider
-LLM routing with automatic fallback (L-05).
+Two modes — auto-selected based on :class:`LLMConfig`:
+
+**Direct mode** (LLM_API_BASE is set):
+    AsyncOpenAI client connects directly to the provider's API endpoint
+    (DeepSeek, OpenAI, etc.).  No proxy process needed.
+
+**LiteLLM Proxy mode** (LLM_API_BASE is NOT set):
+    AsyncOpenAI client connects to the LiteLLM Proxy at
+    ``http://localhost:4000/v1``, which handles multi-provider routing,
+    automatic fallback chains, and cost tracking.
 
 Example usage::
 
     from sectest.llm.provider import get_model
 
-    model = get_model("gpt-4o")          # specific model
-    model = get_model()                   # uses LLMConfig.default_model
+    model = get_model()                   # uses LLMConfig default
+    model = get_model("deepseek/deepseek-v4-flash")
 
-    # Or via Runner:
     result = await Runner.run(
         agent,
         "input",
@@ -33,52 +40,51 @@ from sectest.llm.config import LLMConfig
 # ---------------------------------------------------------------------------
 # Disable built-in OpenAI tracing for Phase 1.
 #
-# The openai-agents SDK ships with a built-in trace exporter that sends
-# spans directly to OpenAI.  In Phase 2 this will be replaced by the
-# Langfuse / OpenInference exporter, and this call MUST be removed.
+# In Phase 2 this will be replaced by the Langfuse / OpenInference exporter.
+# Remove this call at that time.
 # ---------------------------------------------------------------------------
 set_tracing_disabled(disabled=True)
 
 
 def _build_client(config: LLMConfig) -> AsyncOpenAI:
-    """Create an AsyncOpenAI client pointed at the LiteLLM Proxy."""
-    return AsyncOpenAI(base_url=config.base_url, api_key=config.api_key)
+    """Create an AsyncOpenAI client for the current connection mode."""
+    return AsyncOpenAI(
+        base_url=config.effective_base_url,
+        api_key=config.effective_api_key,
+    )
 
 
 class LiteLLMModelProvider(ModelProvider):
-    """Model provider that routes LLM calls through LiteLLM Proxy.
+    """Model provider that routes LLM calls through LiteLLM or directly.
 
-    Implements the :class:`agents.ModelProvider` interface so the
-    openai-agents SDK can use our LiteLLM-backed :class:`AsyncOpenAI`
-    client instead of hitting the OpenAI API directly.
+    Implements the :class:`agents.ModelProvider` interface.  Connection
+    mode (direct vs proxy) is determined by :class:`LLMConfig` based on
+    which environment variables are set.
 
     Parameters:
         config: Optional :class:`LLMConfig`.  When *None*, a default
             config is created (reads env vars at construction time).
     """
 
-    # ------------------------------------------------------------------
-    # The ``__init__`` accepts an optional config to allow tests to
-    # inject their own LLMConfig with a controlled api_key.
-    # ------------------------------------------------------------------
-
     def __init__(self, config: LLMConfig | None = None) -> None:
         self._config = config or LLMConfig()
         self._client = _build_client(self._config)
 
+    # -- ModelProvider interface ----------------------------------------------
+
     def get_model(self, model_name: str | None = None) -> Model:
-        """Return an :class:`OpenAIChatCompletionsModel` bound to LiteLLM.
+        """Return an :class:`OpenAIChatCompletionsModel`.
 
         Parameters:
             model_name: The model identifier (e.g. ``"gpt-4o"``,
-                ``"claude-sonnet-4"``).  When *None*, the default from
-                ``LLMConfig.default_model`` is used.
+                ``"deepseek/deepseek-v4-flash"``).  When *None*, the
+                default from ``LLMConfig.model`` is used.
 
         Returns:
-            An :class:`OpenAIChatCompletionsModel` configured to use
-            the LiteLLM Proxy endpoint.
+            An :class:`OpenAIChatCompletionsModel` configured for the
+            current connection mode.
         """
-        resolved_name = model_name or self._config.default_model
+        resolved_name = model_name or self._config.model
         return OpenAIChatCompletionsModel(
             model=resolved_name,
             openai_client=self._client,
@@ -87,8 +93,8 @@ class LiteLLMModelProvider(ModelProvider):
 
 # ---------------------------------------------------------------------------
 # Singleton — one provider shared across the platform.
-# Lazily constructed so that import works even when LITELLM_API_KEY is
-# not yet set in the environment (e.g. during test collection).
+# Lazily constructed so that import works even when API keys are not yet
+# set (e.g. during test collection).
 # ---------------------------------------------------------------------------
 _llm_provider: LiteLLMModelProvider | None = None
 
@@ -109,13 +115,11 @@ def get_model(model_name: str | None = None) -> Model:
             from the environment is used.
 
     Returns:
-        An :class:`OpenAIChatCompletionsModel` routed through LiteLLM.
+        An :class:`OpenAIChatCompletionsModel`.
     """
     return _get_llm_provider().get_model(model_name)
 
 
-# Backwards-compatible alias.  Property so that ``llm_provider`` resolves
-# to the singleton.  Use :func:`get_model` for new code.
 def __getattr__(name: str) -> object:
     if name == "llm_provider":
         return _get_llm_provider()

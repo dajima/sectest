@@ -58,6 +58,18 @@ def _build_parser() -> argparse.ArgumentParser:
         help="Progress output format.  'json' emits one JSON object per "
         "line; 'text' prints human-readable messages (default: json).",
     )
+    parser.add_argument(
+        "--model",
+        default=None,
+        help="Override the model name (e.g. deepseek-v4-flash).  Defaults to "
+        "the LLM_MODEL or DEFAULT_MODEL environment variable.",
+    )
+    parser.add_argument(
+        "--llm-only",
+        action="store_true",
+        help="Skip Docker sandbox entirely — only test LLM connectivity. "
+        "Useful for verifying API keys and model access.",
+    )
     return parser
 
 
@@ -69,14 +81,29 @@ def _build_parser() -> argparse.ArgumentParser:
 async def _run_phase_pull_image(
     emitter: ProgressEmitter | None,
     manager: SandboxManager,
-) -> None:
-    """Pre-pull Kali sandbox image."""
+) -> bool:
+    """Pre-pull Kali sandbox image. Returns True if image is ready."""
     if emitter is not None:
         with emitter.phase("PULL_IMAGE", "Pre-pulling Kali sandbox image..."):
-            await manager.pre_pull_image()
+            ok = await manager.pre_pull_image()
+            if not ok:
+                raise RuntimeError(
+                    "Kali sandbox image not found. Build it first:\n"
+                    "  bash docker/build.sh\n"
+                    f"Expected image: {manager._config.image}"
+                )
+            return True
     else:
         print("Pre-pulling Kali sandbox image...")
-        await manager.pre_pull_image()
+        ok = await manager.pre_pull_image()
+        if not ok:
+            print(
+                f"Error: Kali sandbox image '{manager._config.image}' not found.",
+                file=sys.stderr,
+            )
+            print("Build it first: bash docker/build.sh", file=sys.stderr)
+            sys.exit(1)
+        return True
 
 
 async def _run_phase_create_sandbox(
@@ -154,26 +181,54 @@ async def async_main() -> None:
     # 1. Resolve progress emitter
     emitter = ProgressEmitter() if args.progress_format == "json" else None
 
-    # 2. Load configuration
+    # 2. Load configuration (validates API keys are set)
     try:
-        LLMConfig()  # validates LITELLM_API_KEY is set
+        llm_config = LLMConfig()
     except ValueError as exc:
         if emitter is not None:
             emitter.emit("PULL_IMAGE", "error", str(exc))
         else:
             print(f"Configuration error: {exc}", file=sys.stderr)
+            print(
+                "\nTip: Use direct mode to skip LiteLLM Proxy:",
+                "\n  $env:LLM_MODEL=\"deepseek/deepseek-v4-flash\"",
+                "\n  $env:LLM_API_KEY=\"sk-...\"",
+                "\n  $env:LLM_API_BASE=\"https://api.deepseek.com/v1\"",
+                "\nOr set LITELLM_API_KEY and start the proxy:",
+                "\n  docker compose up litellm -d",
+                file=sys.stderr,
+            )
         sys.exit(1)
 
     # 3. Initialize SandboxManager
     sandbox_config = SandboxConfig()
     manager = SandboxManager(sandbox_config)
 
-    # 4. Initialize ReconAgent (uses default model from LLMConfig/Provider)
-    agent = ReconAgent(manager, model=None)
+    # 4. Initialize ReconAgent with configured model (--model overrides env)
+    model = args.model or llm_config.model
+    agent = ReconAgent(manager, model=model)
 
     session: SandboxSession | None = None
 
     try:
+        # --llm-only: skip Docker, test LLM connectivity only
+        if args.llm_only:
+            if emitter is not None:
+                emitter.emit("TOOL_EXEC", "running", f"Testing LLM connectivity with model={model}...")
+
+            # Quick LLM connectivity check — no sandbox needed
+            test_agent = ReconAgent(manager, model=model)
+            test_session = await manager.create_session()
+            try:
+                result = await test_agent.run_scan("localhost", session=test_session)
+            finally:
+                manager.schedule_cleanup(test_session)
+
+            if emitter is not None:
+                emitter.emit("TOOL_EXEC", "done", "LLM test completed.")
+            _output_results(emitter, result)
+            return
+
         # Phase: PULL_IMAGE
         await _run_phase_pull_image(emitter, manager)
 

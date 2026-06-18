@@ -64,7 +64,7 @@ Prioritize:
 3. Single-agent pipeline: Recon -> Analysis -> Report (simplest end-to-end flow)
 4. LiteLLM integration with at least OpenAI + Anthropic
 5. JSON vulnerability report output
-6. CLI interface (`strix scan --target ./app`)
+6. CLI interface (`sectest scan --target ./app`)
 
 Defer:
 - Multi-agent collaboration graph: v2 after single-agent pipeline is stable

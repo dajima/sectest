@@ -1,4 +1,4 @@
-# Requirements: Strix — Unified AI Security Testing Platform
+# Requirements: Sectest — Unified AI Security Testing Platform
 
 **Defined:** 2026-06-18
 **Core Value:** AI agent 能够自主完成从代码审计到动态渗透的端到端安全评估，在 Kali 沙箱中运行真实安全工具，通过 PoC 严格验证每个发现的漏洞，输出可操作的安全报告。
@@ -9,7 +9,7 @@
 
 - [ ] **ENTRY-01**: 平台支持多目标、多模式组合输入——单次扫描可同时传入代码仓库（Git URL/本地路径）、Web URL、SSH 凭证、IP 范围等多种目标类型
 - [ ] **ENTRY-02**: 用户入口的输入模式采用可扩展架构——新增目标类型（如 Kubernetes cluster、S3 bucket）只需实现 TargetProvider 接口并注册到能力中心
-- [ ] **ENTRY-03**: 平台提供 CLI 命令行工具——支持 `strix scan --target <url|repo|ssh|ip>` 多目标本地扫描，终端输出实时进度和报告摘要
+- [ ] **ENTRY-03**: 平台提供 CLI 命令行工具——支持 `sectest scan --target <url|repo|ssh|ip>` 多目标本地扫描，终端输出实时进度和报告摘要
 - [ ] **ENTRY-04**: 平台提供 Web 管理界面——Vue 3 + Vite 前端，支持 SSE 实时推送扫描进度、项目管理、报告查看
 
 ### 核心引擎
@@ -18,6 +18,10 @@
 - [ ] **CORE-02**: 平台实现多 Agent 协作框架——支持两种模式：（1）顺序流水线模式（Recon → Analysis → Verification → Report）通过 openai-agents SDK handoff 机制传递结构化摘要；（2）动态探索模式——各阶段 Agent 可在内部动态 spawn 子 Agent 深入挖掘特定漏洞路径，子 Agent 独立运行、回报结果后销毁
 - [ ] **CORE-03**: 平台集成 LiteLLM Proxy 作为 LLM 网关——支持多提供商路由、自动 Fallback、按模型/扫描追踪成本
 - [ ] **CORE-04**: 平台实现 Skill（Markdown 知识）/ Tool（沙箱执行）/ Plugin（Skill+Tool 组合）/ MCP Client 四层能力注册中心，支持运行时注册与发现
+
+### 资产管理
+
+- [ ] **ASSET-01**: 平台提供安全资产管理能力——支持创建和管理 Project（项目）→ Asset（资产，如代码仓库 Git URL/本地路径、API 端点 URL/Swagger 定义、域名/IP 范围、环境变量/配置文件、SSH 凭证）→ Scan（扫描任务）三级结构。资产支持 CRUD 操作、标签分类（代码仓/API/环境/敏感信息）、关联凭证管理（SSH key、API token、Basic Auth）。资产清单作为扫描目标的数据源——扫描任务从资产创建，扫描历史自动关联到对应资产。新增目标类型只需实现 AssetProvider 接口并注册。
 
 ### 灰盒扫描
 
@@ -96,30 +100,31 @@ Which phases cover which requirements. Updated during roadmap creation.
 |-------------|-------|--------|
 | ENTRY-01 | Phase 3 | Pending |
 | ENTRY-02 | Phase 3 | Pending |
-| ENTRY-03 | Phase 3 | Pending |
-| ENTRY-04 | Phase 5 | Pending |
+| ENTRY-03 | Phase 4 | Pending |
+| ENTRY-04 | Phase 6 | Pending |
 | CORE-01 | Phase 1 | Pending |
 | CORE-02 | Phase 2 | Pending |
 | CORE-03 | Phase 1 | Pending |
 | CORE-04 | Phase 2 | Pending |
-| GBOX-01 | Phase 4 | Pending |
-| GBOX-02 | Phase 4 | Pending |
-| SAST-01 | Phase 3 | Pending |
-| SAST-02 | Phase 3 | Pending |
-| SAST-03 | Phase 3 | Pending |
-| DAST-01 | Phase 4 | Pending |
-| DAST-02 | Phase 4 | Pending |
-| DAST-03 | Phase 4 | Pending |
-| DAST-04 | Phase 4 | Pending |
-| RPT-01 | Phase 5 | Pending |
-| RPT-02 | Phase 5 | Pending |
-| RPT-03 | Phase 5 | Pending |
-| ADV-01 | Phase 6 | Pending |
-| ADV-02 | Phase 6 | Pending |
+| ASSET-01 | Phase 3 | Pending |
+| GBOX-01 | Phase 5 | Pending |
+| GBOX-02 | Phase 5 | Pending |
+| SAST-01 | Phase 4 | Pending |
+| SAST-02 | Phase 4 | Pending |
+| SAST-03 | Phase 4 | Pending |
+| DAST-01 | Phase 5 | Pending |
+| DAST-02 | Phase 5 | Pending |
+| DAST-03 | Phase 5 | Pending |
+| DAST-04 | Phase 5 | Pending |
+| RPT-01 | Phase 6 | Pending |
+| RPT-02 | Phase 6 | Pending |
+| RPT-03 | Phase 6 | Pending |
+| ADV-01 | Phase 7 | Pending |
+| ADV-02 | Phase 7 | Pending |
 
 **Coverage:**
-- v1 requirements: 22 total
-- Mapped to phases: 22
+- v1 requirements: 23 total
+- Mapped to phases: 23
 - Unmapped: 0 ✓
 
 ---

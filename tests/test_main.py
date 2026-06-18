@@ -316,7 +316,7 @@ class TestStreamingProgress:
 
     @pytest.fixture(autouse=True)
     def _patch_llm_config(self, monkeypatch):
-        """Ensure LLMConfig.from_env() does not fail due to missing API key."""
+        """Ensure LLMConfig does not fail due to missing API key."""
         monkeypatch.setenv("LITELLM_API_KEY", "test-key-do-not-use")
 
     @pytest.fixture

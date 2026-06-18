@@ -1,0 +1,61 @@
+# Strix — .dockerignore for Kali gold image builds
+# Minimize build context sent to Docker daemon
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.venv/
+.uv/
+venv/
+build/
+dist/
+*.egg-info/
+*.egg
+
+# IDE and editor
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Git
+.git/
+.gitignore
+.gitattributes
+
+# Environment and secrets
+.env
+.env.*
+!.env.example
+
+# Node (frontend — not needed for Kali image)
+node_modules/
+frontend/
+.next/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Planning docs (not needed in image)
+.planning/
+
+# Test artifacts
+tests/
+.pytest_cache/
+.coverage
+htmlcov/
+*.pyc
+
+# Docker
+docker/.dockerignore
+docker/build.sh
+docker/README.md
+
+# README and docs
+README.md
+LICENSE
+*.md

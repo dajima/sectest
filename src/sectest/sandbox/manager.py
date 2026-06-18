@@ -261,6 +261,12 @@ class SandboxManager:
             exposed_ports=(),
         )
 
+        # NOTE: capabilities, memory, and cpu limits are NOT passed via
+        # DockerSandboxClientOptions (the SDK does not support these fields).
+        # The SDK internally applies a default set of capabilities.
+        # In Phase 2, we will evaluate whether a custom container create
+        # path is needed for strict least-privilege enforcement (L-04).
+
         # create() is async-safe (the SDK internally uses a thread pool)
         inner_session: DockerSandboxSession = await client.create(
             manifest=manifest,

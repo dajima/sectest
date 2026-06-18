@@ -1,13 +1,13 @@
 # Project Research Summary
 
-**Project:** Strix -- Unified AI Security Testing Platform
+**Project:** Sectest -- Unified AI Security Testing Platform
 **Domain:** AI-powered security audit platform (SAST + DAST) with multi-agent orchestration
 **Researched:** 2026-06-18
 **Confidence:** HIGH
 
 ## Executive Summary
 
-Strix is a unified AI security testing platform that combines static analysis (SAST) and dynamic testing (DAST) into a single multi-agent pipeline. Experts in this space build on three pillars: an agent orchestration framework for the AI pipeline, isolated sandbox execution for running dangerous security tools, and polyglot persistence (relational, ephemeral, and vector) to handle the fundamentally different data access patterns each tier demands. The two reference implementations -- Strix (MIT, openai-agents SDK) and DeepAudit (AGPL-3.0, LangGraph) -- validate this architecture but also demonstrate the critical fork in the road: openai-agents SDK provides the SandboxAgent abstraction that maps directly to Docker Kali sandboxes, while LangGraph carries AGPL-3.0 constraints and heavier abstraction layers.
+Sectest is a unified AI security testing platform that combines static analysis (SAST) and dynamic testing (DAST) into a single multi-agent pipeline. Experts in this space build on three pillars: an agent orchestration framework for the AI pipeline, isolated sandbox execution for running dangerous security tools, and polyglot persistence (relational, ephemeral, and vector) to handle the fundamentally different data access patterns each tier demands. The two reference implementations -- Sectest (MIT, openai-agents SDK) and DeepAudit (AGPL-3.0, LangGraph) -- validate this architecture but also demonstrate the critical fork in the road: openai-agents SDK provides the SandboxAgent abstraction that maps directly to Docker Kali sandboxes, while LangGraph carries AGPL-3.0 constraints and heavier abstraction layers.
 
 The recommended approach is to build on openai-agents SDK 0.17.5 for multi-agent orchestration, Kali Linux Docker containers managed through a SandboxManager abstraction layer, and LiteLLM Proxy for provider-agnostic LLM routing. The frontend uses React 19 with shadcn/ui + TanStack Query, while the backend serves FastAPI with SSE streaming for real-time scan progress. Three databases serve distinct roles: PostgreSQL for structured data (projects, scan results, users), Redis for ephemeral state (sessions, queues, pub/sub), and ChromaDB for RAG-based semantic code indexing. Langfuse v4 provides self-hosted observability with OpenInference OTLP span export from the agent SDK.
 
@@ -119,7 +119,7 @@ Based on research, four phases deliver a working CLI-first MVP, then progressive
 
 **Rationale:** Everything depends on the agent->sandbox->tool execution loop. This phase validates the core innovation (AI-driven security testing in isolated containers) before investing in multi-agent complexity, web UI, or RAG infrastructure. The Kali sandbox lifecycle, LiteLLM integration, and basic tool execution must work before anything else can.
 
-**Delivers:** CLI tool (strix scan --target ./app) that imports source code or targets a URL, provisions a Kali Docker sandbox, runs a single ReconAgent with Semgrep/Nmap tools via LiteLLM, and outputs a JSON vulnerability report.
+**Delivers:** CLI tool (sectest scan --target ./app) that imports source code or targets a URL, provisions a Kali Docker sandbox, runs a single ReconAgent with Semgrep/Nmap tools via LiteLLM, and outputs a JSON vulnerability report.
 
 **Addresses (from FEATURES.md):** Source code import, basic SAST/DAST scanning, Docker Kali sandbox lifecycle, LLM provider config, CLI interface, JSON report output.
 
@@ -191,7 +191,7 @@ Phases with standard patterns (skip research-phase):
 
 | Area | Confidence | Notes |
 |------|------------|-------|
-| Stack | HIGH | All recommendations backed by official docs, multiple production references (Strix, DeepAudit), and high-confidence tutorials. Versions pinned to current stable releases. Alternatives clearly evaluated with rationale. |
+| Stack | HIGH | All recommendations backed by official docs, multiple production references (Sectest, DeepAudit), and high-confidence tutorials. Versions pinned to current stable releases. Alternatives clearly evaluated with rationale. |
 | Features | HIGH | Table stakes derived from security tooling expectations. Differentiators validated against reference implementations. Anti-features clearly scoped by PROJECT.md boundaries. MVP recommendation follows logical dependency chain. |
 | Architecture | HIGH | Patterns validated by two independent reference implementations. Layered architecture with clear component boundaries. Data flow diagrams cover both SAST and DAST paths. Scalability considerations address each tier from single-user to SaaS. |
 | Pitfalls | HIGH | Pitfalls sourced from real-world security tooling experience and multi-agent platform patterns. Preventions are specific, testable, and practical. Phase-specific warnings map pitfalls to implementation stages. Detection criteria provided for each critical pitfall. |
@@ -213,7 +213,7 @@ The research is comprehensive and actionable. All major architectural decisions 
 ### Primary (HIGH confidence)
 - [OpenAI Agents SDK v0.17.5 -- GitHub](https://github.com/openai/openai-agents-python) -- agent framework, SandboxAgent, handoffs, guardrails, tracing
 - [OpenAI Agents SDK Sandbox Agents Quickstart](https://openai.github.io/openai-agents-python/sandbox_agents/) -- Docker sandbox integration patterns
-- [Strix (usestrix/strix) -- GitHub](https://github.com/usestrix/strix) -- reference architecture, multi-agent pipeline design
+- [Sectest (usestrix/strix) -- GitHub](https://github.com/usestrix/strix) -- reference architecture, multi-agent pipeline design
 - [DeepAudit (lintsinghua/DeepAudit) -- GitHub](https://github.com/lintsinghua/DeepAudit) -- reference architecture (AGPL-3.0, patterns only)
 - [LiteLLM + OpenAI Agents SDK Integration](https://docs.litellm.ai/docs/tutorials/openai_agents_sdk) -- LiteLLM proxy configuration for openai-agents SDK
 - [FastAPI 0.136.1 Production Stack 2026](https://tech-insider.org/fastapi-tutorial-python-rest-api-13-steps-2026/) -- FastAPI + SQLAlchemy 2.0 async patterns

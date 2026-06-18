@@ -1,6 +1,6 @@
 # Technology Stack
 
-**Project:** Strix -- Unified AI Security Testing Platform
+**Project:** Sectest -- Unified AI Security Testing Platform
 **Researched:** 2026-06-18
 **Overall confidence:** HIGH
 
@@ -11,7 +11,7 @@
 | Technology | Version | Purpose | Why |
 |------------|---------|---------|-----|
 | Python | 3.12+ | Backend runtime | openai-agents SDK is Python-only; 3.12 is the current stable with mature async support. 3.13 production-stable as of 2026. |
-| uv | latest | Package manager | Faster than pip (rust-based), replaces pip/poetry/pipenv. Both reference projects (Strix, DeepAudit) use uv. |
+| uv | latest | Package manager | Faster than pip (rust-based), replaces pip/poetry/pipenv. Both reference projects (Sectest, DeepAudit) use uv. |
 
 ### Agent Framework
 
@@ -205,7 +205,7 @@ uv add --dev ruff mypy pre-commit
 
 - [OpenAI Agents SDK v0.17.5 -- GitHub](https://github.com/openai/openai-agents-python) -- HIGH confidence
 - [OpenAI Agents SDK Sandbox Agents Quickstart](https://openai.github.io/openai-agents-python/sandbox_agents/) -- HIGH confidence
-- [Strix (usestrix/strix) -- GitHub](https://github.com/usestrix/strix) -- HIGH confidence (reference architecture)
+- [Sectest (usestrix/strix) -- GitHub](https://github.com/usestrix/strix) -- HIGH confidence (reference architecture)
 - [DeepAudit (lintsinghua/DeepAudit) -- GitHub](https://github.com/lintsinghua/DeepAudit) -- HIGH confidence (reference architecture)
 - [LiteLLM + OpenAI Agents SDK Integration](https://docs.litellm.ai/docs/tutorials/openai_agents_sdk) -- HIGH confidence
 - [FastAPI 0.136.1 Production Stack 2026](https://tech-insider.org/fastapi-tutorial-python-rest-api-13-steps-2026/) -- HIGH confidence
