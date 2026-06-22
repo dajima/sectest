@@ -48,7 +48,7 @@ curl -s http://localhost:4000/health
 
 **Troubleshooting:**
 - If the proxy fails to start, check `docker compose logs litellm`
-- Ensure `LITELLM_MASTER_KEY` is set in `.env` (default: `sk-sectest-lite`)
+- Ensure `LITELLM_MASTER_KEY` is set in `.env` (default: `sk-lite`)
 - Verify `.env` has valid provider API keys (`OPENAI_API_KEY`, etc.)
 
 ---
@@ -86,7 +86,7 @@ target (localhost or a test service you control).
 
 ```bash
 # Set the LiteLLM master key
-export LITELLM_API_KEY="sk-sectest-lite"
+export LITELLM_API_KEY="sk-lite"
 
 # Run a scan against localhost
 uv run python -m sectest.main --target localhost --progress-format json
@@ -182,7 +182,7 @@ Simulate a failure condition and verify the platform handles it cleanly.
 docker compose stop litellm
 
 # Run scan (should fail gracefully)
-export LITELLM_API_KEY="sk-sectest-lite"
+export LITELLM_API_KEY="sk-lite"
 uv run python -m sectest.main --target localhost --progress-format json 2>&1
 
 # Restart proxy after test
@@ -222,7 +222,7 @@ If Docker daemon is stopped:
 
 | Symptom | Likely Cause | Fix |
 |---------|-------------|-----|
-| `{"status":"error","message":"LITELLM_API_KEY..."}` | API key not set | `export LITELLM_API_KEY="sk-sectest-lite"` |
+| `{"status":"error","message":"LITELLM_API_KEY..."}` | API key not set | `export LITELLM_API_KEY="sk-lite"` |
 | `Connection refused` during scan | LiteLLM proxy not running | `docker compose up litellm -d` |
 | `Image not found: sectest/kali-sandbox:latest` | Kali image not built | Run `bash docker/build.sh` |
 | LLM returns 429 rate limit | LiteLLM fallback not configured | Check LiteLLM proxy config for fallback chain |

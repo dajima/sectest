@@ -11,7 +11,7 @@ Two modes — auto-detected from the environment:
 **LiteLLM Proxy mode** (multi-provider fallback, cost tracking)::
 
     $env:LITELLM_BASE_URL="http://localhost:4000/v1"
-    $env:LITELLM_API_KEY="sk-sectest-lite"
+    $env:LITELLM_API_KEY="sk-lite"
 
     # Also start the proxy first:
     #   docker compose up litellm -d
@@ -104,7 +104,7 @@ class LLMConfig:
             if not self.litellm_api_key:
                 raise ValueError(
                     "LITELLM_API_KEY environment variable is required. "
-                    "Set it to your LiteLLM Proxy master key "
-                    "(default: sk-sectest-lite), or switch to direct mode "
-                    "by setting LLM_API_BASE and LLM_API_KEY."
+                    "Set it to your LiteLLM Proxy master key, "
+                    "or switch to direct mode by setting "
+                    "LLM_API_BASE and LLM_API_KEY."
                 )
